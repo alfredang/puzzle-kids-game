@@ -1,0 +1,1321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🧩 Pattern Quest — Puzzle Game for Kids</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #1a1a2e;
+    --card: #16213e;
+    --accent: #e94560;
+    --accent2: #0f3460;
+    --gold: #f5c518;
+    --green: #2ecc71;
+    --blue: #3498db;
+    --purple: #9b59b6;
+    --orange: #e67e22;
+    --pink: #e91e8c;
+    --cyan: #1abc9c;
+    --white: #ecf0f1;
+  }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    color: var(--white);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Animated background */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background:
+      radial-gradient(circle at 20% 50%, rgba(233,69,96,0.1) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(52,152,219,0.1) 0%, transparent 50%),
+      radial-gradient(circle at 50% 80%, rgba(155,89,182,0.1) 0%, transparent 50%);
+    z-index: -1;
+    animation: bgPulse 8s ease-in-out infinite alternate;
+  }
+
+  @keyframes bgPulse {
+    0% { opacity: 0.5; }
+    100% { opacity: 1; }
+  }
+
+  /* Stars */
+  .stars {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    z-index: -1; pointer-events: none;
+  }
+  .star {
+    position: absolute;
+    width: 3px; height: 3px;
+    background: white;
+    border-radius: 50%;
+    animation: twinkle 2s ease-in-out infinite alternate;
+  }
+  @keyframes twinkle { 0% { opacity: 0.2; } 100% { opacity: 1; } }
+
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    padding: 20px 0;
+  }
+  .header h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2.5em;
+    background: linear-gradient(135deg, var(--gold), var(--accent), var(--purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: titleGlow 3s ease-in-out infinite alternate;
+  }
+  @keyframes titleGlow {
+    0% { filter: brightness(1); }
+    100% { filter: brightness(1.3); }
+  }
+  .mascot {
+    font-size: 3em;
+    display: inline-block;
+    animation: bounce 1s ease-in-out infinite;
+  }
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+
+  /* Stats bar */
+  .stats {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin: 15px 0;
+  }
+  .stat {
+    background: var(--card);
+    padding: 8px 20px;
+    border-radius: 25px;
+    font-weight: 700;
+    border: 2px solid rgba(255,255,255,0.1);
+    display: flex; align-items: center; gap: 8px;
+    font-size: 1.05em;
+  }
+
+  /* Screens */
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* Menu Screen */
+  .menu-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: 3.5em;
+    text-align: center;
+    margin: 30px 0 10px;
+    background: linear-gradient(135deg, var(--gold), var(--accent), var(--purple), var(--blue));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .menu-sub {
+    text-align: center;
+    font-size: 1.3em;
+    opacity: 0.8;
+    margin-bottom: 30px;
+  }
+  .menu-mascot {
+    text-align: center;
+    font-size: 6em;
+    margin: 20px 0;
+    animation: bounce 1.5s ease-in-out infinite;
+  }
+
+  /* Buttons */
+  .btn {
+    display: inline-block;
+    padding: 15px 40px;
+    border: none;
+    border-radius: 15px;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.3em;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .btn:hover { transform: scale(1.05); }
+  .btn:active { transform: scale(0.95); }
+  .btn-play {
+    background: linear-gradient(135deg, var(--green), #27ae60);
+    box-shadow: 0 5px 20px rgba(46,204,113,0.4);
+  }
+  .btn-accent {
+    background: linear-gradient(135deg, var(--accent), #c0392b);
+    box-shadow: 0 5px 20px rgba(233,69,96,0.4);
+  }
+  .btn-blue {
+    background: linear-gradient(135deg, var(--blue), var(--accent2));
+    box-shadow: 0 5px 20px rgba(52,152,219,0.4);
+  }
+  .btn-small {
+    padding: 10px 25px;
+    font-size: 1em;
+  }
+  .btn-group {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin: 20px 0;
+  }
+
+  /* Game area */
+  .level-info {
+    text-align: center;
+    margin: 10px 0;
+  }
+  .level-info h2 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.6em;
+    color: var(--gold);
+  }
+  .level-info p {
+    opacity: 0.8;
+    font-size: 1.1em;
+    margin-top: 5px;
+  }
+
+  .puzzle-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    margin: 20px 0;
+  }
+
+  .sequence-row {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .cell {
+    width: 70px;
+    height: 70px;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8em;
+    font-weight: 900;
+    border: 3px solid rgba(255,255,255,0.15);
+    transition: all 0.3s;
+    user-select: none;
+  }
+
+  .cell-filled {
+    animation: popIn 0.3s ease-out;
+  }
+  @keyframes popIn {
+    0% { transform: scale(0); }
+    70% { transform: scale(1.15); }
+    100% { transform: scale(1); }
+  }
+
+  .cell-blank {
+    background: rgba(255,255,255,0.05);
+    border: 3px dashed rgba(255,255,255,0.3);
+    cursor: pointer;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  .cell-blank:hover {
+    border-color: var(--gold);
+    background: rgba(245,197,24,0.1);
+    transform: scale(1.05);
+  }
+  @keyframes pulse {
+    0%, 100% { border-color: rgba(255,255,255,0.3); }
+    50% { border-color: rgba(245,197,24,0.5); }
+  }
+
+  .cell-selected {
+    border-color: var(--gold) !important;
+    box-shadow: 0 0 20px rgba(245,197,24,0.5);
+    animation: none;
+  }
+
+  /* Answer choices */
+  .choices {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 15px 0;
+  }
+
+  .choice {
+    width: 65px;
+    height: 65px;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6em;
+    font-weight: 900;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 3px solid rgba(255,255,255,0.2);
+    background: var(--card);
+  }
+  .choice:hover {
+    transform: scale(1.1);
+    border-color: var(--gold);
+  }
+
+  /* Hint */
+  .hint-area {
+    text-align: center;
+    margin: 10px 0;
+    min-height: 30px;
+  }
+  .hint-text {
+    background: rgba(245,197,24,0.15);
+    padding: 8px 20px;
+    border-radius: 10px;
+    display: inline-block;
+    border: 1px solid rgba(245,197,24,0.3);
+  }
+
+  /* Feedback */
+  .feedback {
+    text-align: center;
+    font-size: 1.5em;
+    font-weight: 900;
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .feedback.correct {
+    color: var(--green);
+    animation: correctAnim 0.5s ease-out;
+  }
+  .feedback.wrong {
+    color: var(--accent);
+    animation: shake 0.5s ease-out;
+  }
+  @keyframes correctAnim {
+    0% { transform: scale(0.5); }
+    50% { transform: scale(1.3); }
+    100% { transform: scale(1); }
+  }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-10px); }
+    75% { transform: translateX(10px); }
+  }
+
+  /* Level complete overlay */
+  .overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+  }
+  .overlay.active { display: flex; }
+  .overlay-content {
+    background: var(--card);
+    padding: 40px;
+    border-radius: 25px;
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+    border: 3px solid var(--gold);
+    animation: popIn 0.5s ease-out;
+  }
+  .overlay-content h2 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2em;
+    color: var(--gold);
+    margin-bottom: 10px;
+  }
+  .overlay-emoji {
+    font-size: 4em;
+    margin: 15px 0;
+  }
+
+  /* Progress bar */
+  .progress-wrap {
+    background: rgba(255,255,255,0.1);
+    border-radius: 10px;
+    height: 12px;
+    margin: 15px 0;
+    overflow: hidden;
+  }
+  .progress-bar {
+    height: 100%;
+    border-radius: 10px;
+    background: linear-gradient(90deg, var(--green), var(--gold));
+    transition: width 0.5s ease-out;
+  }
+
+  /* Level select */
+  .level-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 12px;
+    margin: 20px 0;
+  }
+  .level-btn {
+    aspect-ratio: 1;
+    border: none;
+    border-radius: 15px;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.4em;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: white;
+    position: relative;
+  }
+  .level-btn:hover { transform: scale(1.1); }
+  .level-btn.locked {
+    background: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.3);
+    cursor: not-allowed;
+  }
+  .level-btn.locked:hover { transform: none; }
+  .level-btn.completed {
+    background: linear-gradient(135deg, var(--green), #27ae60);
+  }
+  .level-btn.current {
+    background: linear-gradient(135deg, var(--gold), var(--orange));
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+  .level-btn .stars-display {
+    position: absolute;
+    bottom: 2px;
+    left: 0; right: 0;
+    font-size: 0.45em;
+    letter-spacing: -1px;
+  }
+
+  /* Grid puzzle (for pattern matching) */
+  .grid-puzzle {
+    display: grid;
+    gap: 8px;
+    justify-content: center;
+    margin: 15px auto;
+  }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .menu-title { font-size: 2.5em; }
+    .header h1 { font-size: 2em; }
+    .cell { width: 55px; height: 55px; font-size: 1.4em; }
+    .choice { width: 55px; height: 55px; font-size: 1.3em; }
+    .btn { padding: 12px 30px; font-size: 1.1em; }
+  }
+</style>
+</head>
+<body>
+
+<div class="stars" id="stars"></div>
+
+<div class="container">
+  <!-- MENU SCREEN -->
+  <div class="screen active" id="menuScreen">
+    <div class="menu-mascot">🦊</div>
+    <div class="menu-title">Pattern Quest</div>
+    <div class="menu-sub">Can you crack the code? 🧩</div>
+    <div class="btn-group">
+      <button class="btn btn-play" onclick="startGame()">▶ Play!</button>
+      <button class="btn btn-blue" onclick="showLevels()">🗺️ Levels</button>
+    </div>
+    <div style="text-align:center; margin-top: 30px; opacity: 0.6; font-size: 0.95em;">
+      <p>Spot the pattern. Solve the puzzle. Become a Pattern Master! 🌟</p>
+    </div>
+  </div>
+
+  <!-- LEVEL SELECT SCREEN -->
+  <div class="screen" id="levelScreen">
+    <div class="header">
+      <div class="mascot">🦊</div>
+      <h1>Choose a Level</h1>
+    </div>
+    <div class="level-grid" id="levelGrid"></div>
+    <div class="btn-group">
+      <button class="btn btn-accent btn-small" onclick="showScreen('menuScreen')">⬅ Back</button>
+    </div>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div class="screen" id="gameScreen">
+    <div class="header">
+      <div class="mascot">🦊</div>
+      <h1>Pattern Quest</h1>
+    </div>
+
+    <div class="stats">
+      <div class="stat">⭐ <span id="scoreDisplay">0</span></div>
+      <div class="stat">🏆 Level <span id="levelDisplay">1</span>/15</div>
+      <div class="stat">⏱️ <span id="timerDisplay">0:00</span></div>
+      <div class="stat">❤️ <span id="livesDisplay">3</span></div>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+    </div>
+
+    <div class="level-info">
+      <h2 id="levelTitle">Level 1</h2>
+      <p id="levelDesc">Find the pattern!</p>
+    </div>
+
+    <div class="puzzle-area" id="puzzleArea"></div>
+
+    <div class="hint-area">
+      <button class="btn btn-blue btn-small" id="hintBtn" onclick="showHint()">💡 Hint (-50 pts)</button>
+      <div id="hintText" style="margin-top: 10px;"></div>
+    </div>
+
+    <div class="feedback" id="feedback"></div>
+
+    <div class="btn-group">
+      <button class="btn btn-accent btn-small" onclick="showScreen('menuScreen')">🏠 Menu</button>
+      <button class="btn btn-blue btn-small" onclick="resetLevel()">🔄 Reset</button>
+    </div>
+  </div>
+
+  <!-- GAME OVER SCREEN -->
+  <div class="screen" id="gameOverScreen">
+    <div style="text-align:center; padding: 40px 0;">
+      <div style="font-size: 5em; margin: 20px 0;">🎉🦊🎉</div>
+      <h1 style="font-family: 'Fredoka One', cursive; font-size: 2.5em; color: var(--gold);">
+        Pattern Master!
+      </h1>
+      <p style="font-size: 1.3em; margin: 15px 0; opacity: 0.8;">
+        You completed all 15 levels!
+      </p>
+      <div style="font-size: 1.5em; margin: 20px 0;">
+        ⭐ Final Score: <span id="finalScore" style="color: var(--gold); font-weight: 900;">0</span>
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-play" onclick="startGame()">🔄 Play Again</button>
+        <button class="btn btn-blue" onclick="showScreen('menuScreen')">🏠 Menu</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Level Complete Overlay -->
+<div class="overlay" id="levelComplete">
+  <div class="overlay-content">
+    <div class="overlay-emoji" id="completeEmoji">🌟</div>
+    <h2 id="completeTitle">Amazing!</h2>
+    <p id="completeMsg" style="font-size: 1.1em; opacity: 0.8; margin: 10px 0;"></p>
+    <p style="font-size: 1.3em; margin: 10px 0;">⭐ +<span id="levelPoints">0</span> points</p>
+    <div id="completeStars" style="font-size: 2.5em; margin: 10px 0;"></div>
+    <div class="btn-group">
+      <button class="btn btn-play" onclick="nextLevel()">Next Level ➡</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============ AUDIO ENGINE ============
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx;
+function ensureAudio() { if (!audioCtx) audioCtx = new AudioCtx(); }
+
+function playTone(freq, dur, type = 'sine', vol = 0.15) {
+  ensureAudio();
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.type = type;
+  o.frequency.value = freq;
+  g.gain.value = vol;
+  g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+  o.connect(g);
+  g.connect(audioCtx.destination);
+  o.start();
+  o.stop(audioCtx.currentTime + dur);
+}
+
+function sfxCorrect() {
+  playTone(523, 0.1); setTimeout(() => playTone(659, 0.1), 100);
+  setTimeout(() => playTone(784, 0.2), 200);
+}
+function sfxWrong() {
+  playTone(200, 0.15, 'sawtooth', 0.1);
+  setTimeout(() => playTone(150, 0.2, 'sawtooth', 0.1), 150);
+}
+function sfxClick() { playTone(440, 0.05, 'sine', 0.08); }
+function sfxLevelComplete() {
+  [523, 587, 659, 784, 880, 1047].forEach((f, i) =>
+    setTimeout(() => playTone(f, 0.15, 'sine', 0.12), i * 80)
+  );
+}
+function sfxGameOver() {
+  [1047, 988, 880, 784, 698, 659, 587, 523].forEach((f, i) =>
+    setTimeout(() => playTone(f, 0.2, 'triangle', 0.1), i * 100)
+  );
+}
+
+// ============ GAME STATE ============
+const COLORS = ['#e94560','#3498db','#2ecc71','#f5c518','#9b59b6','#e67e22','#1abc9c','#e91e8c'];
+const COLOR_NAMES = ['Red','Blue','Green','Gold','Purple','Orange','Teal','Pink'];
+const SHAPES = ['●','■','▲','◆','★','⬟','⬡','♥'];
+
+let state = {
+  level: 0,
+  score: 0,
+  lives: 3,
+  timer: 0,
+  timerInterval: null,
+  hintUsed: false,
+  selectedBlank: null,
+  levelData: null,
+  completed: JSON.parse(localStorage.getItem('pq_completed') || '{}'),
+  highScore: parseInt(localStorage.getItem('pq_highscore') || '0')
+};
+
+// ============ LEVELS ============
+const LEVELS = [
+  // Level 1: Simple color sequence
+  {
+    title: "Color Sequence",
+    desc: "What color comes next?",
+    hint: "Look at the repeating pattern of colors!",
+    type: "sequence",
+    generate() {
+      const pattern = [0, 1, 2]; // R, B, G repeating
+      const seq = [];
+      for (let i = 0; i < 7; i++) seq.push(pattern[i % 3]);
+      const blank = 6;
+      const answer = seq[blank];
+      const choices = [0, 1, 2, 3];
+      return { seq, blanks: [blank], answers: [answer], choices, display: 'color' };
+    }
+  },
+  // Level 2: Number sequence (+2)
+  {
+    title: "Number Jump",
+    desc: "Each number grows! Find the missing one.",
+    hint: "Add 2 each time!",
+    type: "sequence",
+    generate() {
+      const seq = [2, 4, 6, 8, 10, 12, 14];
+      const blank = 5;
+      const answer = seq[blank];
+      const choices = [10, 12, 14, 11];
+      return { seq, blanks: [blank], answers: [answer], choices, display: 'number' };
+    }
+  },
+  // Level 3: Shape sequence
+  {
+    title: "Shape Pattern",
+    desc: "Shapes follow a pattern. What's missing?",
+    hint: "The shapes repeat every 3!",
+    type: "sequence",
+    generate() {
+      const pattern = [0, 1, 2]; // circle, square, triangle
+      const seq = [];
+      for (let i = 0; i < 8; i++) seq.push(pattern[i % 3]);
+      const blank = 5;
+      const answer = seq[blank];
+      const choices = [0, 1, 2, 3];
+      return { seq, blanks: [blank], answers: [answer], choices, display: 'shape' };
+    }
+  },
+  // Level 4: Number sequence (*2)
+  {
+    title: "Double Trouble",
+    desc: "These numbers are doubling! 🤔",
+    hint: "Multiply by 2 each time!",
+    type: "sequence",
+    generate() {
+      const seq = [1, 2, 4, 8, 16, 32, 64];
+      const blank = 4;
+      const answer = seq[blank];
+      const choices = [12, 16, 20, 15];
+      return { seq, blanks: [blank], answers: [answer], choices, display: 'number' };
+    }
+  },
+  // Level 5: Alternating colors with 2 blanks
+  {
+    title: "Double Blank",
+    desc: "Two pieces are missing! Fill them both.",
+    hint: "Two colors alternate: Red and Blue!",
+    type: "sequence",
+    generate() {
+      const seq = [0, 1, 0, 1, 0, 1, 0, 1];
+      const blanks = [3, 6];
+      const answers = [seq[3], seq[6]];
+      const choices = [0, 1, 2];
+      return { seq, blanks, answers, choices, display: 'color' };
+    }
+  },
+  // Level 6: Fibonacci-like
+  {
+    title: "Fibonacci Fun",
+    desc: "Add the last two numbers to get the next!",
+    hint: "1+1=2, 1+2=3, 2+3=5...",
+    type: "sequence",
+    generate() {
+      const seq = [1, 1, 2, 3, 5, 8, 13];
+      const blank = 5;
+      const answer = 8;
+      const choices = [6, 7, 8, 9];
+      return { seq, blanks: [blank], answers: [answer], choices, display: 'number' };
+    }
+  },
+  // Level 7: Color + Shape combo
+  {
+    title: "Color Shape Combo",
+    desc: "Both colors and shapes follow patterns!",
+    hint: "Colors go R-B-G. Shapes go ●-■-▲.",
+    type: "combo",
+    generate() {
+      const colors = [0, 1, 2, 0, 1, 2];
+      const shapes = [0, 1, 2, 0, 1, 2];
+      const blank = 4;
+      const answerColor = colors[blank];
+      const answerShape = shapes[blank];
+      const colorChoices = [0, 1, 2];
+      const shapeChoices = [0, 1, 2];
+      return { colors, shapes, blanks: [blank], answerColor, answerShape, colorChoices, shapeChoices };
+    }
+  },
+  // Level 8: Grid pattern (3x3, find missing)
+  {
+    title: "Grid Pattern",
+    desc: "Each row follows a rule. What fits?",
+    hint: "Look at how colors change across each row!",
+    type: "grid",
+    generate() {
+      const grid = [
+        [0, 1, 2],
+        [1, 2, 0],
+        [2, 0, -1]
+      ];
+      const answer = 1;
+      const choices = [0, 1, 2, 3];
+      return { grid, answer, choices, display: 'color', rows: 3, cols: 3 };
+    }
+  },
+  // Level 9: Squares pattern
+  {
+    title: "Perfect Squares",
+    desc: "These are special numbers! 🔢",
+    hint: "1×1=1, 2×2=4, 3×3=9...",
+    type: "sequence",
+    generate() {
+      const seq = [1, 4, 9, 16, 25, 36, 49];
+      const blank = 4;
+      const answer = 25;
+      const choices = [20, 24, 25, 30];
+      return { seq, blanks: [blank], answers: [answer], choices, display: 'number' };
+    }
+  },
+  // Level 10: Complex color pattern
+  {
+    title: "Pattern Layers",
+    desc: "A tricky color pattern with 3 blanks!",
+    hint: "The pattern is: R R B B G G, then repeats!",
+    type: "sequence",
+    generate() {
+      const seq = [0, 0, 1, 1, 2, 2, 0, 0, 1, 1];
+      const blanks = [4, 7, 9];
+      const answers = [2, 0, 1];
+      const choices = [0, 1, 2];
+      return { seq, blanks, answers, choices, display: 'color' };
+    }
+  },
+  // Level 11: Triangular numbers
+  {
+    title: "Triangle Numbers",
+    desc: "The gaps keep growing! 📐",
+    hint: "Differences: +1, +2, +3, +4, +5...",
+    type: "sequence",
+    generate() {
+      const seq = [1, 2, 4, 7, 11, 16, 22];
+      const blank = 5;
+      const answer = 16;
+      const choices = [14, 15, 16, 17];
+      return { seq, blanks: [blank], answers: [answer], choices, display: 'number' };
+    }
+  },
+  // Level 12: Shape rotation pattern
+  {
+    title: "Shape Rotation",
+    desc: "Shapes shift through a cycle!",
+    hint: "Each position shifts by 1: ●→■→▲→◆→●",
+    type: "sequence",
+    generate() {
+      const seq = [0, 1, 2, 3, 0, 1, 2, 3];
+      const blanks = [3, 7];
+      const answers = [3, 3];
+      const choices = [0, 1, 2, 3];
+      return { seq, blanks, answers, choices, display: 'shape' };
+    }
+  },
+  // Level 13: 4x4 grid, diagonals
+  {
+    title: "Grid Challenge",
+    desc: "Rows AND columns follow rules!",
+    hint: "Every row and every column uses each color once!",
+    type: "grid",
+    generate() {
+      const grid = [
+        [0, 1, 2, 3],
+        [1, 2, 3, 0],
+        [2, 3, 0, 1],
+        [3, 0, 1, -1]
+      ];
+      const answer = 2;
+      const choices = [0, 1, 2, 3];
+      return { grid, answer, choices, display: 'color', rows: 4, cols: 4 };
+    }
+  },
+  // Level 14: Alternating operations
+  {
+    title: "Operation Mix",
+    desc: "The rule alternates between +3 and ×2!",
+    hint: "Start at 1: +3→4, ×2→8, +3→11, ×2→22...",
+    type: "sequence",
+    generate() {
+      // 1, +3=4, ×2=8, +3=11, ×2=22, +3=25, ×2=50
+      const seq = [1, 4, 8, 11, 22, 25, 50];
+      const blank = 4;
+      const answer = 22;
+      const choices = [18, 20, 22, 24];
+      return { seq, blanks: [blank], answers: [answer], choices, display: 'number' };
+    }
+  },
+  // Level 15: Grand finale — mixed grid with shapes
+  {
+    title: "Pattern Master!",
+    desc: "The ultimate challenge — crack this grid! 🏆",
+    hint: "Each row rotates the shapes by one position!",
+    type: "grid",
+    generate() {
+      const grid = [
+        [0, 1, 2, 3, 4],
+        [1, 2, 3, 4, 0],
+        [2, 3, 4, 0, 1],
+        [3, 4, 0, 1, 2],
+        [4, 0, 1, 2, -1]
+      ];
+      const answer = 3;
+      const choices = [0, 1, 2, 3, 4];
+      return { grid, answer, choices, display: 'shape', rows: 5, cols: 5 };
+    }
+  }
+];
+
+// ============ ENCOURAGEMENTS ============
+const ENCOURAGEMENTS = [
+  ["🌟 Amazing!", "You're a natural pattern finder!"],
+  ["🎯 Spot On!", "Your brain is on fire!"],
+  ["🚀 Incredible!", "Nothing can stop you!"],
+  ["💎 Brilliant!", "You're a puzzle genius!"],
+  ["🧠 Big Brain!", "That was seriously impressive!"],
+  ["⚡ Lightning Fast!", "You solved that so quick!"],
+  ["🦊 Foxy Smart!", "The fox is proud of you!"],
+  ["🏆 Champion!", "Pattern Master in the making!"],
+  ["✨ Dazzling!", "You make it look easy!"],
+  ["🔥 On Fire!", "Keep that streak going!"]
+];
+
+// ============ SCREEN MANAGEMENT ============
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ============ STARS BACKGROUND ============
+function createStars() {
+  const container = document.getElementById('stars');
+  for (let i = 0; i < 60; i++) {
+    const star = document.createElement('div');
+    star.className = 'star';
+    star.style.left = Math.random() * 100 + '%';
+    star.style.top = Math.random() * 100 + '%';
+    star.style.animationDelay = Math.random() * 2 + 's';
+    star.style.width = star.style.height = (Math.random() * 3 + 1) + 'px';
+    container.appendChild(star);
+  }
+}
+
+// ============ LEVEL SELECT ============
+function showLevels() {
+  showScreen('levelScreen');
+  const grid = document.getElementById('levelGrid');
+  grid.innerHTML = '';
+  LEVELS.forEach((lvl, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'level-btn';
+    const isCompleted = state.completed[i];
+    const isUnlocked = i === 0 || state.completed[i - 1];
+
+    if (isCompleted) {
+      btn.classList.add('completed');
+      const starsCount = state.completed[i] || 0;
+      btn.innerHTML = `${i + 1}<div class="stars-display">${'⭐'.repeat(Math.min(starsCount, 3))}</div>`;
+    } else if (isUnlocked) {
+      btn.classList.add('current');
+      btn.textContent = i + 1;
+    } else {
+      btn.classList.add('locked');
+      btn.textContent = '🔒';
+    }
+
+    if (isUnlocked) {
+      btn.onclick = () => { state.level = i; loadLevel(); showScreen('gameScreen'); };
+    }
+    grid.appendChild(btn);
+  });
+}
+
+// ============ GAME LOGIC ============
+function startGame() {
+  state.score = 0;
+  state.lives = 3;
+  state.level = 0;
+  // Find first uncompleted level
+  for (let i = 0; i < LEVELS.length; i++) {
+    if (!state.completed[i]) { state.level = i; break; }
+    if (i === LEVELS.length - 1) state.level = 0; // all complete, restart
+  }
+  loadLevel();
+  showScreen('gameScreen');
+}
+
+function loadLevel() {
+  clearInterval(state.timerInterval);
+  state.timer = 0;
+  state.hintUsed = false;
+  state.selectedBlank = null;
+
+  const lvl = LEVELS[state.level];
+  state.levelData = lvl.generate();
+
+  document.getElementById('levelDisplay').textContent = state.level + 1;
+  document.getElementById('scoreDisplay').textContent = state.score;
+  document.getElementById('livesDisplay').textContent = state.lives;
+  document.getElementById('levelTitle').textContent = lvl.title;
+  document.getElementById('levelDesc').textContent = lvl.desc;
+  document.getElementById('feedback').textContent = '';
+  document.getElementById('feedback').className = 'feedback';
+  document.getElementById('hintText').innerHTML = '';
+  document.getElementById('hintBtn').style.display = 'inline-block';
+  document.getElementById('progressBar').style.width = ((state.level) / LEVELS.length * 100) + '%';
+
+  renderPuzzle();
+  startTimer();
+}
+
+function startTimer() {
+  state.timerInterval = setInterval(() => {
+    state.timer++;
+    const m = Math.floor(state.timer / 60);
+    const s = (state.timer % 60).toString().padStart(2, '0');
+    document.getElementById('timerDisplay').textContent = `${m}:${s}`;
+  }, 1000);
+}
+
+function renderPuzzle() {
+  const area = document.getElementById('puzzleArea');
+  area.innerHTML = '';
+  const data = state.levelData;
+  const lvl = LEVELS[state.level];
+
+  if (lvl.type === 'grid') {
+    renderGrid(area, data);
+  } else if (lvl.type === 'combo') {
+    renderCombo(area, data);
+  } else {
+    renderSequence(area, data);
+  }
+}
+
+function renderSequence(area, data) {
+  // Sequence row
+  const row = document.createElement('div');
+  row.className = 'sequence-row';
+
+  data.seq.forEach((val, i) => {
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+
+    if (data.blanks.includes(i)) {
+      cell.classList.add('cell-blank');
+      cell.dataset.index = i;
+      cell.textContent = '?';
+      cell.onclick = () => selectBlank(cell, i);
+      // If already answered
+      if (cell.dataset.answered) {
+        cell.classList.remove('cell-blank');
+        cell.classList.add('cell-filled');
+      }
+    } else {
+      cell.classList.add('cell-filled');
+      if (data.display === 'color') {
+        cell.style.background = COLORS[val];
+        cell.textContent = '';
+      } else if (data.display === 'shape') {
+        cell.style.background = COLORS[val];
+        cell.textContent = SHAPES[val];
+      } else {
+        cell.style.background = 'var(--accent2)';
+        cell.textContent = val;
+      }
+    }
+    row.appendChild(cell);
+  });
+  area.appendChild(row);
+
+  // Arrow showing direction
+  const arrow = document.createElement('div');
+  arrow.style.cssText = 'text-align:center; font-size:1.5em; opacity:0.5; margin: 5px 0;';
+  arrow.textContent = '➡️ Find the missing piece!';
+  area.appendChild(arrow);
+
+  // Choices
+  renderChoices(area, data);
+}
+
+function renderGrid(area, data) {
+  const grid = document.createElement('div');
+  grid.className = 'grid-puzzle';
+  grid.style.gridTemplateColumns = `repeat(${data.cols}, 70px)`;
+
+  for (let r = 0; r < data.rows; r++) {
+    for (let c = 0; c < data.cols; c++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      const val = data.grid[r][c];
+
+      if (val === -1) {
+        cell.classList.add('cell-blank');
+        cell.textContent = '?';
+        cell.dataset.row = r;
+        cell.dataset.col = c;
+        cell.onclick = () => selectBlank(cell, `${r},${c}`);
+      } else {
+        cell.classList.add('cell-filled');
+        if (data.display === 'color') {
+          cell.style.background = COLORS[val];
+        } else if (data.display === 'shape') {
+          cell.style.background = COLORS[val];
+          cell.textContent = SHAPES[val];
+        }
+      }
+      grid.appendChild(cell);
+    }
+  }
+  area.appendChild(grid);
+
+  // Choices
+  const choicesDiv = document.createElement('div');
+  choicesDiv.className = 'choices';
+  data.choices.forEach(val => {
+    const choice = document.createElement('div');
+    choice.className = 'choice';
+    if (data.display === 'color') {
+      choice.style.background = COLORS[val];
+    } else if (data.display === 'shape') {
+      choice.style.background = COLORS[val];
+      choice.textContent = SHAPES[val];
+    }
+    choice.onclick = () => checkGridAnswer(val);
+    choicesDiv.appendChild(choice);
+  });
+  area.appendChild(choicesDiv);
+}
+
+function renderCombo(area, data) {
+  const row = document.createElement('div');
+  row.className = 'sequence-row';
+
+  data.colors.forEach((color, i) => {
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+
+    if (data.blanks.includes(i)) {
+      cell.classList.add('cell-blank');
+      cell.textContent = '?';
+      cell.onclick = () => selectBlank(cell, i);
+    } else {
+      cell.classList.add('cell-filled');
+      cell.style.background = COLORS[color];
+      cell.textContent = SHAPES[data.shapes[i]];
+    }
+    row.appendChild(cell);
+  });
+  area.appendChild(row);
+
+  // Two rows of choices: colors then shapes
+  const colorLabel = document.createElement('p');
+  colorLabel.textContent = '🎨 Pick the color:';
+  colorLabel.style.cssText = 'text-align:center; margin: 10px 0 5px; font-weight:700;';
+  area.appendChild(colorLabel);
+
+  const colorChoices = document.createElement('div');
+  colorChoices.className = 'choices';
+  data.colorChoices.forEach(val => {
+    const choice = document.createElement('div');
+    choice.className = 'choice';
+    choice.style.background = COLORS[val];
+    choice.onclick = () => checkComboAnswer('color', val);
+    colorChoices.appendChild(choice);
+  });
+  area.appendChild(colorChoices);
+
+  const shapeLabel = document.createElement('p');
+  shapeLabel.textContent = '🔷 Pick the shape:';
+  shapeLabel.style.cssText = 'text-align:center; margin: 10px 0 5px; font-weight:700;';
+  area.appendChild(shapeLabel);
+
+  const shapeChoices = document.createElement('div');
+  shapeChoices.className = 'choices';
+  data.shapeChoices.forEach(val => {
+    const choice = document.createElement('div');
+    choice.className = 'choice';
+    choice.style.background = '#444';
+    choice.textContent = SHAPES[val];
+    choice.onclick = () => checkComboAnswer('shape', val);
+    shapeChoices.appendChild(choice);
+  });
+  area.appendChild(shapeChoices);
+}
+
+function renderChoices(area, data) {
+  const choicesDiv = document.createElement('div');
+  choicesDiv.className = 'choices';
+
+  data.choices.forEach(val => {
+    const choice = document.createElement('div');
+    choice.className = 'choice';
+    if (data.display === 'color') {
+      choice.style.background = COLORS[val];
+    } else if (data.display === 'shape') {
+      choice.style.background = COLORS[val];
+      choice.textContent = SHAPES[val];
+    } else {
+      choice.style.background = 'var(--accent2)';
+      choice.textContent = val;
+    }
+    choice.onclick = () => checkSequenceAnswer(val);
+    choicesDiv.appendChild(choice);
+  });
+  area.appendChild(choicesDiv);
+}
+
+// Track answers for multi-blank
+let blankAnswers = {};
+let comboAnswers = {};
+
+function selectBlank(cell, index) {
+  sfxClick();
+  document.querySelectorAll('.cell-blank').forEach(c => c.classList.remove('cell-selected'));
+  cell.classList.add('cell-selected');
+  state.selectedBlank = index;
+}
+
+function checkSequenceAnswer(val) {
+  sfxClick();
+  const data = state.levelData;
+
+  if (data.blanks.length === 1) {
+    // Single blank
+    if (val === data.answers[0]) {
+      handleCorrect();
+    } else {
+      handleWrong();
+    }
+  } else {
+    // Multi blank — need to select a blank first
+    if (state.selectedBlank === null) {
+      showFeedback('👆 Click a ? first!', false);
+      return;
+    }
+    const blankIdx = data.blanks.indexOf(state.selectedBlank);
+    if (val === data.answers[blankIdx]) {
+      // Fill it in
+      const cells = document.querySelectorAll('.cell-blank');
+      cells.forEach(c => {
+        if (parseInt(c.dataset.index) === state.selectedBlank) {
+          c.classList.remove('cell-blank', 'cell-selected');
+          c.classList.add('cell-filled');
+          c.textContent = '';
+          if (data.display === 'color') {
+            c.style.background = COLORS[val];
+          } else if (data.display === 'shape') {
+            c.style.background = COLORS[val];
+            c.textContent = SHAPES[val];
+          } else {
+            c.style.background = 'var(--accent2)';
+            c.textContent = val;
+          }
+        }
+      });
+      blankAnswers[state.selectedBlank] = true;
+      state.selectedBlank = null;
+      sfxCorrect();
+      showFeedback('✅ Correct!', true);
+
+      // Check if all blanks filled
+      if (Object.keys(blankAnswers).length === data.blanks.length) {
+        setTimeout(() => handleCorrect(), 500);
+      }
+    } else {
+      handleWrong();
+    }
+  }
+}
+
+function checkGridAnswer(val) {
+  const data = state.levelData;
+  if (val === data.answer) {
+    handleCorrect();
+  } else {
+    handleWrong();
+  }
+}
+
+function checkComboAnswer(type, val) {
+  sfxClick();
+  const data = state.levelData;
+  comboAnswers[type] = val;
+
+  if (comboAnswers.color !== undefined && comboAnswers.shape !== undefined) {
+    if (comboAnswers.color === data.answerColor && comboAnswers.shape === data.answerShape) {
+      handleCorrect();
+    } else {
+      handleWrong();
+      comboAnswers = {};
+    }
+  } else {
+    showFeedback(`✅ Got the ${type}! Now pick the ${type === 'color' ? 'shape' : 'color'}!`, true);
+  }
+}
+
+function handleCorrect() {
+  clearInterval(state.timerInterval);
+  sfxLevelComplete();
+
+  const timeBonus = Math.max(0, 300 - state.timer * 5);
+  const hintPenalty = state.hintUsed ? 50 : 0;
+  const points = 100 + timeBonus - hintPenalty;
+  state.score += points;
+
+  // Stars based on time
+  let stars = 1;
+  if (state.timer < 15) stars = 3;
+  else if (state.timer < 30) stars = 2;
+
+  state.completed[state.level] = stars;
+  localStorage.setItem('pq_completed', JSON.stringify(state.completed));
+  if (state.score > state.highScore) {
+    state.highScore = state.score;
+    localStorage.setItem('pq_highscore', state.score.toString());
+  }
+
+  // Show overlay
+  const [emoji, title] = ENCOURAGEMENTS[Math.floor(Math.random() * ENCOURAGEMENTS.length)];
+  document.getElementById('completeEmoji').textContent = emoji;
+  document.getElementById('completeTitle').textContent = title;
+  document.getElementById('completeMsg').textContent =
+    state.hintUsed ? 'You used a hint, but still nailed it!' : 'Solved without any hints!';
+  document.getElementById('levelPoints').textContent = points;
+  document.getElementById('completeStars').textContent = '⭐'.repeat(stars) + '☆'.repeat(3 - stars);
+  document.getElementById('levelComplete').classList.add('active');
+
+  // Reset multi-blank state
+  blankAnswers = {};
+  comboAnswers = {};
+}
+
+function handleWrong() {
+  sfxWrong();
+  state.lives--;
+  document.getElementById('livesDisplay').textContent = state.lives;
+  showFeedback('❌ Not quite! Try again!', false);
+
+  if (state.lives <= 0) {
+    clearInterval(state.timerInterval);
+    setTimeout(() => {
+      state.lives = 3;
+      showFeedback('💔 Out of lives! Level reset.', false);
+      blankAnswers = {};
+      comboAnswers = {};
+      loadLevel();
+    }, 1000);
+  }
+}
+
+function showFeedback(msg, isCorrect) {
+  const fb = document.getElementById('feedback');
+  fb.textContent = msg;
+  fb.className = 'feedback ' + (isCorrect ? 'correct' : 'wrong');
+}
+
+function nextLevel() {
+  document.getElementById('levelComplete').classList.remove('active');
+  blankAnswers = {};
+  comboAnswers = {};
+
+  if (state.level < LEVELS.length - 1) {
+    state.level++;
+    loadLevel();
+  } else {
+    // Game complete!
+    sfxGameOver();
+    document.getElementById('finalScore').textContent = state.score;
+    showScreen('gameOverScreen');
+  }
+}
+
+function resetLevel() {
+  blankAnswers = {};
+  comboAnswers = {};
+  state.lives = 3;
+  loadLevel();
+}
+
+function showHint() {
+  if (state.hintUsed) return;
+  state.hintUsed = true;
+  state.score = Math.max(0, state.score - 50);
+  document.getElementById('scoreDisplay').textContent = state.score;
+  document.getElementById('hintText').innerHTML =
+    `<span class="hint-text">💡 ${LEVELS[state.level].hint}</span>`;
+  document.getElementById('hintBtn').style.display = 'none';
+  sfxClick();
+}
+
+// ============ INIT ============
+createStars();
+</script>
+</body>
+</html>
